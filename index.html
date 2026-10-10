@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>सुवाणा ग्राम पंचायत चुनाव 2026 - डिजिटल जनमत सर्वेक्षण</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Yantramanav:wght@400;500;700;900&family=Teko:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- Firebase SDK (Version 8) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyBjs5xVtSZ9b21_n9fSP9rVcjjDvDDcmYc",
+        authDomain: "suwana-35db9.firebaseapp.com",
+        databaseURL: "https://suwana-35db9-default-rtdb.firebaseio.com",
+        projectId: "suwana-35db9",
+        storageBucket: "suwana-35db9.firebasestorage.app",
+        messagingSenderId: "857354684067",
+        appId: "1:857354684067:web:7b5fb8186e35b04ff92116",
+        measurementId: "G-3QZ9478YKQ"
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+    </script>
+
+    <style>
+        body {
+            font-family: 'Yantramanav', sans-serif;
+            background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 45%, #020617 100%);
+            color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .score-font {
+            font-family: 'Teko', sans-serif;
+            letter-spacing: 1px;
+        }
+        .evm-btn {
+            background: radial-gradient(circle at 30% 30%, #3b82f6, #1d4ed8);
+            box-shadow: 0 4px 0 #1e40af, 0 8px 16px rgba(37, 99, 235, 0.4);
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .evm-btn:active:not(:disabled) {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #1e40af, 0 3px 6px rgba(37, 99, 235, 0.3);
+        }
+        .pulse-led {
+            box-shadow: 0 0 12px #ef4444, 0 0 24px #dc2626;
+            animation: pulseGlow 0.8s infinite alternate;
+        }
+        @keyframes pulseGlow {
+            from { opacity: 0.8; }
+            to { opacity: 1; filter: drop-shadow(0 0 8px #ef4444); }
+        }
+        .custom-glass {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .countdown-glow {
+            background: linear-gradient(135deg, rgba(225, 29, 72, 0.25), rgba(245, 158, 11, 0.2));
+            border: 2px solid rgba(245, 158, 11, 0.7);
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.35);
+        }
+        .gold-winner-card {
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.95), rgba(69, 26, 3, 0.9));
+            border: 2px solid #f59e0b;
+            box-shadow: 0 0 35px rgba(245, 158, 11, 0.4);
+        }
+        .winner-halo {
+            animation: haloPulse 2s infinite ease-in-out;
+        }
+        @keyframes haloPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px #f59e0b); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 25px #fbbf24); }
+        }
+        .ticker-wrap {
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .ticker-move {
+            display: inline-block;
+            animation: marquee 20s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translate3d(100%, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-20 flex flex-col justify-between selection:bg-amber-500 selection:text-black">
+
+    <!-- BREAKING NEWS TICKER -->
+    <div id="tickerBar" class="bg-gradient-to-r from-red-700 via-rose-600 to-red-800 text-white text-xs font-bold py-1.5 px-2 border-b border-red-500/50 shadow-md flex items-center sticky top-0 z-50">
+        <span id="tickerBadge" class="bg-white text-red-700 font-black px-2 py-0.5 rounded text-[10px] uppercase tracking-wider mr-2 shrink-0 animate-pulse flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-red-600"></span> BREAKING NEWS
+        </span>
+        <div class="ticker-wrap flex-1">
+            <div id="breakingNewsText" class="ticker-move text-xs tracking-wide">
+                🔥 सुवाणा महा-दंगल 2026: जनमत सर्वेक्षण मतगणना लगातार जारी...
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-xl sticky top-7 z-40">
+        <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-red-600 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-orange-500/20">
+                    <i class="fa-solid fa-fire-flame-curved text-xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-1.5">
+                        सुवाणा महा-दंगल 2026
+                        <span id="headerLiveBadge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse">
+                            ● LIVE
+                        </span>
+                    </h1>
+                    <p class="text-[11px] text-slate-400 font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-location-dot text-emerald-400"></i> सुवाणा (भीलवाड़ा) | GPS सुरक्षित जनमत सर्वेक्षण
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <button onclick="triggerQuickRefresh()" title="रिफ्रेश करें" class="flex items-center gap-1 px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/40 text-xs rounded-xl font-bold transition active:scale-95">
+                    <i id="syncSpinIcon" class="fa-solid fa-rotate text-xs"></i>
+                    <span class="hidden sm:inline">रिफ्रेश</span>
+                </button>
+                <button id="soundToggleBtn" title="ध्वनि चालू/बंद" class="flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-xs rounded-xl text-slate-300 transition">
+                    <i id="soundIcon" class="fa-solid fa-volume-high text-emerald-400"></i>
+                </button>
+                <button onclick="openAdminModal()" title="प्रबंधन लॉगिन" class="flex items-center gap-1 px-2.5 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs rounded-xl font-bold transition">
+                    <i class="fa-solid fa-lock"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-2xl w-full mx-auto px-4 pt-4">
+
+        <!-- ⏳ 2 घंटे का लाइव काउंटडाउन अलर्ट कार्ड -->
+        <section id="countdownAlertCard" class="hidden countdown-glow rounded-3xl p-4 sm:p-5 mb-5 text-center relative overflow-hidden transition-all duration-300">
+            <div class="inline-flex items-center gap-1.5 bg-rose-600 text-white px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider mb-2 animate-pulse">
+                <i class="fa-solid fa-hourglass-half"></i> अंतिम समय सीमा (Final Countdown)
+            </div>
+            
+            <h2 class="text-base sm:text-lg font-black text-white">
+                ⚠️ परिणाम घोषित होने में केवल कुछ समय शेष!
+            </h2>
+            <p class="text-xs text-amber-200 mt-1 max-w-md mx-auto">
+                घड़ी की सुई घूम रही है! अपने पसंदीदा प्रत्याशी को बढ़त दिलाने के लिए <strong>तुरंत अपना वोट दर्ज करें</strong>।
+            </p>
+
+            <!-- लाइव डिजिटल टाइमर -->
+            <div class="flex items-center justify-center gap-3 my-3">
+                <div class="bg-slate-900/90 border border-amber-500/40 rounded-2xl px-4 py-2 min-w-[70px]">
+                    <span id="cdHours" class="score-font text-3xl sm:text-4xl font-black text-amber-400 block leading-none">01</span>
+                    <span class="text-[9px] text-slate-400 font-bold uppercase">घंटे</span>
+                </div>
+                <span class="score-font text-3xl font-black text-amber-400">:</span>
+                <div class="bg-slate-900/90 border border-amber-500/40 rounded-2xl px-4 py-2 min-w-[70px]">
+                    <span id="cdMinutes" class="score-font text-3xl sm:text-4xl font-black text-amber-400 block leading-none">59</span>
+                    <span class="text-[9px] text-slate-400 font-bold uppercase">मिनट</span>
+                </div>
+                <span class="score-font text-3xl font-black text-amber-400">:</span>
+                <div class="bg-slate-900/90 border border-rose-500/50 rounded-2xl px-4 py-2 min-w-[70px] animate-pulse">
+                    <span id="cdSeconds" class="score-font text-3xl sm:text-4xl font-black text-rose-400 block leading-none">59</span>
+                    <span class="text-[9px] text-slate-400 font-bold uppercase">सेकंड</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-950/80 rounded-2xl p-2.5 flex items-center justify-between text-xs mt-2 border border-slate-800">
+                <span class="text-amber-300 font-bold text-[11px] truncate mr-2">
+                    ⚡ अपने समर्थकों से तुरंत वोट करवाएं!
+                </span>
+                <button onclick="shareViaWhatsApp()" class="shrink-0 px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs flex items-center gap-1 shadow">
+                    <i class="fa-brands fa-whatsapp"></i> ग्रुप में अलर्ट भेजें
+                </button>
+            </div>
+        </section>
+
+        <!-- 👑 भव्य परिणाम घोषणा पोडियम (GRAND WINNER PODIUM) -->
+        <section id="winnerPodiumCard" class="hidden gold-winner-card rounded-3xl p-5 mb-6 text-center relative overflow-hidden transition-all duration-500">
+            <div class="absolute -top-12 -left-12 w-36 h-36 bg-amber-400/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-12 -right-12 w-36 h-36 bg-orange-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="inline-flex items-center gap-2 bg-amber-500 text-slate-950 px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-3 shadow-lg">
+                <i class="fa-solid fa-crown text-base text-yellow-900 animate-bounce"></i> आधिकारिक जनमत विजेता
+            </div>
+            
+            <h2 class="text-xl sm:text-2xl font-black text-amber-300 tracking-wide">
+                ग्राम पंचायत सुवाणा का ऐतिहासिक जनादेश
+            </h2>
+            <p class="text-xs text-slate-300 mt-0.5">जनता की पहली पसंद बनकर उभरे:</p>
+
+            <div class="my-5 flex flex-col items-center justify-center">
+                <div class="relative">
+                    <img id="winnerPhoto" src="c1.jpg" class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover border-4 border-amber-400 shadow-2xl winner-halo bg-slate-800">
+                    <span class="absolute -top-3.5 -right-3.5 bg-gradient-to-tr from-amber-400 to-yellow-500 text-slate-950 p-2 rounded-2xl shadow-xl font-black text-base">
+                        👑 #1
+                    </span>
+                </div>
+                <h3 id="winnerName" class="text-2xl sm:text-3xl font-black text-white mt-3">--</h3>
+                <div class="mt-2 inline-flex items-center gap-3 bg-slate-900/90 border border-amber-500/50 rounded-2xl px-5 py-2">
+                    <div>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase block">प्राप्त कुल मत</span>
+                        <span id="winnerVotes" class="score-font text-3xl font-black text-amber-400 leading-none">0</span>
+                    </div>
+                    <div class="h-8 w-px bg-slate-700"></div>
+                    <div>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase block">जीत का अंतर</span>
+                        <span id="winnerLeadMargin" class="score-font text-3xl font-black text-emerald-400 leading-none">+0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-3 flex items-center justify-between text-xs">
+                <span id="winnerSummaryText" class="font-bold text-slate-300">
+                    शानदार बढ़त के साथ पहले स्थान पर रहे!
+                </span>
+                <button onclick="shareViaWhatsApp()" class="shrink-0 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs flex items-center gap-1.5 shadow-lg">
+                    <i class="fa-brands fa-whatsapp"></i> परिणाम शेयर करें
+                </button>
+            </div>
+        </section>
+
+        <!-- सामान्य रुझान फेस-ऑफ बॉक्स (Top 2 Candidates) -->
+        <section id="battleFaceoffCard" class="custom-glass rounded-3xl p-4 sm:p-5 mb-5 border relative overflow-hidden transition-all duration-300">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-700/60">
+                <span class="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-bolt text-amber-400"></i> शीर्ष मुकाबला (Top 2 Candidates)
+                </span>
+                <span id="battleStatusPill" class="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    कांटे की टक्कर
+                </span>
+            </div>
+
+            <div class="flex items-center justify-between mt-4">
+                <div class="flex flex-col items-center text-center w-5/12">
+                    <div class="relative">
+                        <img id="battleImg1" src="c1.jpg" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-amber-400 shadow-xl bg-slate-800">
+                        <span class="absolute -top-2 -right-2 bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full shadow-md">
+                            #1 आगे
+                        </span>
+                    </div>
+                    <h3 id="battleName1" class="text-sm sm:text-base font-black text-white mt-2 leading-tight">--</h3>
+                    <p id="battleVotes1" class="score-font text-2xl sm:text-3xl font-black text-amber-400 leading-none mt-1">0 <span class="text-xs font-sans font-bold text-slate-400">वोट</span></p>
+                </div>
+
+                <div class="flex flex-col items-center justify-center w-2/12 shrink-0">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-rose-600 to-red-500 text-white font-black text-xs flex items-center justify-center shadow-lg">
+                        VS
+                    </div>
+                    <div class="mt-2 text-center bg-slate-900/90 border border-slate-700 rounded-lg px-2 py-1">
+                        <span class="text-[9px] uppercase font-bold text-slate-400 block">अंतर</span>
+                        <span id="battleDiffNumber" class="text-xs sm:text-sm font-black text-emerald-400">+0</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center text-center w-5/12">
+                    <div class="relative">
+                        <img id="battleImg2" src="c2.jpg" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-slate-600 shadow-md bg-slate-800 opacity-90">
+                        <span class="absolute -top-2 -right-2 bg-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            #2 पीछा
+                        </span>
+                    </div>
+                    <h3 id="battleName2" class="text-sm sm:text-base font-black text-slate-200 mt-2 leading-tight">--</h3>
+                    <p id="battleVotes2" class="score-font text-2xl sm:text-3xl font-black text-slate-400 leading-none mt-1">0 <span class="text-xs font-sans font-bold text-slate-400">वोट</span></p>
+                </div>
+            </div>
+
+            <div class="mt-4 p-2.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between text-xs">
+                <span id="clashVerdictText" class="font-bold text-slate-300 truncate mr-2">
+                    ⚡ रुझान लगातार बदल रहे हैं!
+                </span>
+                <button onclick="shareViaWhatsApp()" class="shrink-0 px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-lg text-[11px] flex items-center gap-1 shadow">
+                    <i class="fa-brands fa-whatsapp"></i> ग्रुप में बताएं
+                </button>
+            </div>
+        </section>
+
+        <!-- EVM Ballot Unit Box (मतपत्र) -->
+        <section id="evmBallotSection" class="custom-glass rounded-3xl shadow-2xl overflow-hidden mb-6 border border-slate-700/80">
+            <div class="bg-slate-800/80 px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <span id="ballotLedIndicator" class="w-3.5 h-3.5 rounded-full bg-emerald-500 inline-block shadow-sm animate-pulse"></span>
+                    <span class="text-sm font-black text-white tracking-wide">डिजिटल मतपत्र (EVM Ballot)</span>
+                </div>
+                <span id="ballotStatusBadge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                    मतदान खुला है
+                </span>
+            </div>
+
+            <div id="candidatesBallotContainer" class="divide-y divide-slate-800/80">
+                <!-- Javascript will load candidates -->
+            </div>
+        </section>
+
+        <!-- Live Results & Chart Section -->
+        <section id="resultsSection" class="custom-glass rounded-3xl p-4 sm:p-6 mb-6 shadow-2xl border border-slate-700/80">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-700/80 gap-3">
+                <div>
+                    <h2 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-amber-400"></i>
+                        लाइव मतगणना व प्रतिशत परिणाम
+                    </h2>
+                    <p class="text-xs text-slate-400 font-medium">वास्तविक समय पर अपडेट होने वाले आंकड़े</p>
+                </div>
+                <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-700 text-white px-4 py-1.5 rounded-2xl font-bold text-xs flex items-center gap-2.5 self-start sm:self-auto shadow-inner">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>कुल वोट: <span id="totalVotesNumber" class="text-amber-400 text-base score-font font-black tracking-wider">0</span></span>
+                </div>
+            </div>
+
+            <!-- Dynamic Live Progress Bars Container -->
+            <div id="progressBarsContainer" class="space-y-4 my-5">
+                <!-- Bars will load dynamically -->
+            </div>
+
+            <!-- Chart Container -->
+            <div class="border-t border-slate-700/80 pt-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">ग्राफ विश्लेषण</h3>
+                    <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-700">
+                        <button id="chartBarBtn" onclick="toggleChartType('bar')" class="px-3 py-1 text-xs rounded-lg font-bold bg-blue-600 text-white transition">बार ग्राफ</button>
+                        <button id="chartPieBtn" onclick="toggleChartType('doughnut')" class="px-3 py-1 text-xs rounded-lg font-bold text-slate-400 transition">पाई चार्ट</button>
+                    </div>
+                </div>
+                <div class="relative h-64 w-full bg-slate-900/70 rounded-2xl p-2 border border-slate-800">
+                    <canvas id="electionChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIRAL SHARE CHALLENGE -->
+        <section class="bg-gradient-to-br from-amber-600 via-orange-700 to-slate-900 rounded-3xl p-5 text-white shadow-2xl text-center mb-6 border border-amber-500/40 relative overflow-hidden">
+            <i class="fa-solid fa-bullhorn text-4xl text-amber-200 mb-2"></i>
+            <h3 class="text-lg sm:text-xl font-black">सुवाणा ग्राम पंचायत का महा-मुकाबला!</h3>
+            <p class="text-xs sm:text-sm text-amber-100 max-w-md mx-auto mt-1 mb-4 leading-relaxed">
+                परिणाम की घोषणा का समय नज़दीक है! सभी व्हाट्सएप ग्रुप्स में शेयर करके अपने प्रत्याशी को जिताएं।
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button onclick="shareViaWhatsApp()" class="w-full sm:w-auto px-6 py-3 bg-white text-slate-950 hover:bg-amber-50 font-black text-sm rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-95 transition">
+                    <i class="fa-brands fa-whatsapp text-emerald-600 text-lg"></i> व्हाट्सएप पर शेयर करें
+                </button>
+                <button onclick="copyShareLink()" class="w-full sm:w-auto px-5 py-3 bg-slate-900/80 hover:bg-slate-900 text-amber-100 font-bold text-sm rounded-2xl border border-amber-400/40 flex items-center justify-center gap-2 active:scale-95 transition">
+                    <i class="fa-regular fa-copy"></i> लिंक कॉपी करें
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- FLOATING LIVE REFRESH BUTTON -->
+    <div class="fixed bottom-4 right-4 z-40">
+        <button onclick="triggerQuickRefresh()" class="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black px-4 py-2.5 rounded-full shadow-2xl border border-amber-300 text-xs transition active:scale-90">
+            <i id="floatSyncIcon" class="fa-solid fa-arrows-rotate"></i>
+            <span>लाइव स्कोर रिफ्रेश</span>
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-slate-400 py-6 border-t border-slate-800/80 bg-slate-900/60">
+        <div class="max-w-md mx-auto px-4 space-y-1">
+            <p class="text-[11px] text-slate-400 font-bold">
+                सुवाणा ग्राम पंचायत चुनाव 2026 जनमत सर्वेक्षण प्रणाली
+            </p>
+            <p class="text-[10px] text-slate-500">सुरक्षित डिजिटल मतदान एवं पारदर्शी मतगणना मॉड्यूल | सर्वाधिकार सुरक्षित</p>
+        </div>
+    </footer>
+
+    <!-- Management Portal Modal -->
+    <div id="adminModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl text-white max-h-[90vh] flex flex-col justify-between">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
+                <h3 class="font-bold text-base text-amber-400 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders"></i> सिस्टम प्रबंधन एवं नियंत्रण पोर्टल
+                </h3>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white text-lg p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- PIN Login Form -->
+            <div id="adminPinView" class="space-y-4 my-auto py-6 max-w-sm mx-auto w-full">
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl font-bold">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <p class="text-xs text-slate-300">प्रबंधन प्रमाणीकरण पिन दर्ज करें:</p>
+                </div>
+                <div>
+                    <input type="password" id="adminPinInput" placeholder="पिन डालें..." class="w-full bg-slate-800 border border-slate-700 rounded-2xl px-4 py-2.5 text-white text-center tracking-widest text-xl font-mono focus:outline-none focus:border-amber-400">
+                </div>
+                <button onclick="verifyAdminPin()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-2xl text-sm transition">
+                    पोर्टल अनलॉक करें
+                </button>
+            </div>
+
+            <!-- Management Controls -->
+            <div id="adminControlsView" class="hidden overflow-y-auto pr-1 space-y-4 text-xs">
+                <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-between text-emerald-400 font-bold">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> व्यवस्थापक सत्र सक्रिय (Authorized Session)</span>
+                    <button onclick="logoutAdmin()" class="text-xs text-rose-400 underline font-semibold">लॉगआउट</button>
+                </div>
+
+                <!-- ⏳ 2 घंटे का लाइव काउंटडाउन एक्टिवेटर -->
+                <div class="bg-gradient-to-r from-rose-950/60 via-slate-800 to-amber-950/60 border-2 border-amber-500/60 rounded-2xl p-4 shadow-xl">
+                    <h4 class="font-black text-amber-300 text-sm flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-stopwatch text-rose-400 text-base"></i> 2 घंटे का अंतिम परिणाम काउंटडाउन (Countdown)
+                    </h4>
+                    <p class="text-[11px] text-slate-300 mb-3">
+                        इसे सक्रिय करते ही सभी स्क्रीन पर 2 घंटे की उल्टी गिनती (02:00:00) शुरू हो जाएगी। समय पूर्ण होते ही परिणाम स्वतः घोषित हो जाएंगे।
+                    </p>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="adminStartTwoHourCountdown()" class="px-4 py-2.5 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-black rounded-xl text-xs flex items-center gap-1.5 shadow">
+                            <i class="fa-solid fa-play"></i> 2 घंटे का काउंटडाउन शुरू करें
+                        </button>
+                        <button onclick="adminForceDeclareResult()" class="px-3.5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs flex items-center gap-1.5 shadow">
+                            <i class="fa-solid fa-trophy"></i> तुरंत परिणाम घोषित करें
+                        </button>
+                        <button onclick="adminResetCountdown()" class="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs">
+                            काउंटडाउन रीसेट करें
+                        </button>
+                    </div>
+                </div>
+
+                <!-- मतदाता ऑडिट लॉग सूची -->
+                <div class="bg-slate-800/90 border border-amber-500/40 rounded-2xl p-4 shadow-lg">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-700">
+                        <div>
+                            <h4 class="font-black text-amber-400 text-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-list-check"></i> मतदाता ऑडिट लॉग (Audit Log Registry)
+                            </h4>
+                            <p class="text-[11px] text-slate-300">सिस्टम सुरक्षा एवं सत्यापन रिकॉर्ड।</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="adminTotalLogsCount" class="px-2 py-0.5 rounded-lg bg-slate-900 text-amber-300 font-mono font-bold text-xs">0 प्रविष्टियां</span>
+                            <button onclick="downloadVoterListCSV()" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 shadow">
+                                <i class="fa-solid fa-file-arrow-down"></i> CSV डाउनलोड
+                            </button>
+                        </div>
+                    </div>
+                    <div class="max-h-52 overflow-y-auto rounded-xl border border-slate-700 mt-2">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-900 sticky top-0 text-[11px] text-slate-400 font-bold border-b border-slate-700">
+                                <tr>
+                                    <th class="p-2">क्र.</th>
+                                    <th class="p-2">समय</th>
+                                    <th class="p-2">डिवाइस टोकन</th>
+                                    <th class="p-2">किसे वोट दिया</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminLogsTableBody" class="divide-y divide-slate-700/60 font-mono text-[11px]">
+                                <tr>
+                                    <td colspan="4" class="p-4 text-center text-slate-500 font-sans">अभी तक कोई रिकॉर्ड दर्ज नहीं हुआ है।</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- एडमिन पिन बदलें -->
+                <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-3.5">
+                    <h4 class="font-bold text-amber-400 text-xs mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-key"></i> एक्सेस क्रेडेंशियल बदलें
+                    </h4>
+                    <div class="flex gap-2">
+                        <input type="text" id="newCustomPinInput" placeholder="नया पिन..." maxlength="10" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-white text-center font-mono font-bold focus:outline-none focus:border-amber-400">
+                        <button onclick="adminChangePIN()" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl transition shrink-0">
+                            पिन अपडेट करें
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-800 text-right shrink-0 mt-3">
+                <button onclick="closeAdminModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs">
+                    बंद करें
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-16 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 text-white px-5 py-3 rounded-full text-xs sm:text-sm shadow-2xl flex items-center gap-3 z-50 opacity-0 pointer-events-none transition-all duration-300">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+        <span id="toastMsg">संदेश</span>
+    </div>
+
+    <!-- MAIN JAVASCRIPT APPLICATION -->
+    <script>
+        const SUWANA_LAT = 25.355493;
+        const SUWANA_LNG = 74.699906;
+        const ALLOWED_RADIUS_KM = 10.0;
+
+        let candidatesList = [
+            { id: 'c1', name: 'पुष्पा अमित चौधरी', img: 'c1.jpg' },
+            { id: 'c2', name: 'भंवर खरवास', img: 'c2.jpg' },
+            { id: 'c3', name: 'अनीता महेंद्र जाट', img: 'c3.jpg' },
+            { id: 'c4', name: 'संजय तिवाड़ी', img: 'c4.jpg' }
+        ];
+
+        const candidateColors = [
+            { bar: 'from-orange-600 to-amber-500', dot: 'bg-orange-500', text: 'text-orange-400', border: 'border-orange-500', chartBg: 'rgba(249, 115, 22, 0.9)', chartBorder: '#ea580c' },
+            { bar: 'from-sky-500 to-blue-600', dot: 'bg-sky-400', text: 'text-sky-400', border: 'border-sky-500', chartBg: 'rgba(14, 165, 233, 0.9)', chartBorder: '#0284c7' },
+            { bar: 'from-emerald-500 to-green-600', dot: 'bg-emerald-400', text: 'text-emerald-400', border: 'border-emerald-500', chartBg: 'rgba(16, 185, 129, 0.9)', chartBorder: '#059669' },
+            { bar: 'from-purple-600 to-indigo-500', dot: 'bg-purple-500', text: 'text-purple-400', border: 'border-purple-500', chartBg: 'rgba(168, 85, 247, 0.9)', chartBorder: '#9333ea' }
+        ];
+
+        const pollState = {
+            votes: {},
+            adminPin: '2772',
+            voterLogs: [],
+            countdownEndTime: null,
+            isResultDeclared: false
+        };
+
+        let soundEnabled = true;
+        let chartInstance = null;
+        let chartType = 'bar';
+        let isAdminLoggedIn = false;
+        let voterDeviceToken = null;
+        let isDeviceLocked = false;
+        let countdownTimerInterval = null;
+        let confettiInterval = null;
+
+        function getColorForIndex(i) {
+            return candidateColors[i % candidateColors.length];
+        }
+
+        function handleImageFallback(imgElement, candidateKey, altName) {
+            imgElement.onerror = null;
+            imgElement.src = `https://placehold.co/160x160/1e293b/ffffff?text=${encodeURIComponent(altName)}`;
+        }
+
+        function showToast(msg, icon = 'fa-circle-check', color = 'text-emerald-400') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            document.getElementById('toastIcon').className = `fa-solid ${icon} ${color} text-base`;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 4000);
+        }
+
+        function playEVMBeepSound() {
+            if (!soundEnabled) return;
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1450, ctx.currentTime);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 1.2);
+            } catch (err) {}
+        }
+
+        function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * (Math.PI / 180);
+            const dLon = (lon2 - lon1) * (Math.PI / 180);
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        function generatePermanentDeviceToken() {
+            let savedToken = localStorage.getItem('suwana_permanent_uid');
+            if (savedToken && savedToken.startsWith('MOB_')) return savedToken;
+
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.textBaseline = 'top';
+                ctx.font = '14px Arial';
+                ctx.fillText('Suwana2026', 2, 15);
+                const raw = [canvas.toDataURL(), navigator.userAgent, screen.width + 'x' + screen.height].join('###');
+                let hash = 0;
+                for (let i = 0; i < raw.length; i++) hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+                savedToken = 'MOB_' + Math.abs(hash).toString(36);
+            } catch (e) {
+                savedToken = 'MOB_' + Math.floor(1000000 + Math.random() * 9000000).toString(36);
+            }
+            localStorage.setItem('suwana_permanent_uid', savedToken);
+            return savedToken;
+        }
+
+        function verifyDeviceStatus() {
+            voterDeviceToken = generatePermanentDeviceToken();
+            if (localStorage.getItem('suwana_voted_permanently') || sessionStorage.getItem('suwana_voted_permanently')) {
+                lockThisDevice('मतदान पूर्ण (डिवाइस लॉक्ड)');
+                return;
+            }
+            db.ref('locked_devices/' + voterDeviceToken).once('value', (snap) => {
+                if (snap.exists()) lockThisDevice('मतदान पूर्ण (डिवाइस लॉक्ड)');
+            });
+        }
+
+        function lockThisDevice(msg) {
+            isDeviceLocked = true;
+            document.querySelectorAll('.candidate-vote-btn').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                btn.innerHTML = `<i class="fa-solid fa-lock text-xs"></i> <span>दर्ज</span>`;
+            });
+            const badge = document.getElementById('ballotStatusBadge');
+            if (badge && !pollState.isResultDeclared) {
+                badge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-700 text-slate-300 border border-slate-600';
+                badge.textContent = msg || 'मतदान दर्ज';
+            }
+        }
+
+        function renderBallotAndProgressContainers() {
+            const ballotBox = document.getElementById('candidatesBallotContainer');
+            const progressBox = document.getElementById('progressBarsContainer');
+            if (!ballotBox || !progressBox) return;
+
+            let ballotHtml = '';
+            let progressHtml = '';
+            const isLockedNow = isDeviceLocked || pollState.isResultDeclared;
+
+            candidatesList.forEach((cand, idx) => {
+                const k = cand.id;
+                const num = String(idx + 1).padStart(2, '0');
+                const col = getColorForIndex(idx);
+
+                ballotHtml += `
+                    <div class="p-4 flex items-center justify-between hover:bg-slate-800/40 transition">
+                        <div class="flex items-center space-x-3.5">
+                            <span class="text-lg font-black text-slate-500 w-5 text-center">${num}</span>
+                            <div class="relative">
+                                <img id="photo-${k}" src="${cand.img}" alt="${cand.name}" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 ${col.border} shadow-md bg-slate-800" onerror="handleImageFallback(this, '${k}', '${cand.name}')">
+                            </div>
+                            <div>
+                                <h3 id="name-${k}" class="text-base sm:text-lg font-black text-white">${cand.name}</h3>
+                                <p class="text-xs text-slate-400 font-medium mt-0.5">प्रत्याशी (ग्राम पंचायत सुवाणा)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3 shrink-0">
+                            <div id="led-${k}" class="w-4 h-4 rounded-full bg-slate-700 border border-slate-600 transition-all duration-200"></div>
+                            <button onclick="requestLocationAndCastVote('${k}')" ${isLockedNow ? 'disabled' : ''} class="evm-btn candidate-vote-btn ${isLockedNow ? 'opacity-50 cursor-not-allowed' : ''} text-white px-5 sm:px-6 py-2.5 rounded-2xl font-bold text-sm sm:text-base flex items-center gap-2">
+                                <span>${pollState.isResultDeclared ? 'समाप्त' : (isLockedNow ? 'दर्ज' : 'वोट')}</span>
+                                <i class="fa-solid ${isLockedNow ? 'fa-lock' : 'fa-fingerprint'} text-base"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                progressHtml += `
+                    <div class="bg-slate-800/70 rounded-2xl p-3.5 border border-slate-700">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full ${col.dot} inline-block shadow"></span>
+                                <span id="bar-name-${k}" class="font-bold text-slate-200 text-sm">${cand.name}</span>
+                                <span id="lead-${k}" class="hidden text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold px-2 py-0.5 rounded-full">👑 आगे</span>
+                            </div>
+                            <div>
+                                <span id="bar-pct-${k}" class="font-black ${col.text} text-sm">0%</span>
+                                <span id="bar-votes-${k}" class="text-xs text-slate-400 ml-1 font-bold">(0 वोट)</span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-slate-900/90 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                            <div id="progress-${k}" class="bg-gradient-to-r ${col.bar} h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            ballotBox.innerHTML = ballotHtml;
+            progressBox.innerHTML = progressHtml;
+        }
+
+        // ⏳ 2 घंटे का लाइव काउंटडाउन इंजन
+        function updateCountdownTimer() {
+            if (!pollState.countdownEndTime) {
+                document.getElementById('countdownAlertCard').classList.add('hidden');
+                return;
+            }
+
+            const now = Date.now();
+            const diff = pollState.countdownEndTime - now;
+
+            if (diff <= 0) {
+                document.getElementById('countdownAlertCard').classList.add('hidden');
+                if (!pollState.isResultDeclared) {
+                    pollState.isResultDeclared = true;
+                    triggerGrandVictoryCelebration();
+                    renderBallotAndProgressContainers();
+                    updateUI();
+                }
+                return;
+            }
+
+            document.getElementById('countdownAlertCard').classList.remove('hidden');
+
+            const totalSec = Math.floor(diff / 1000);
+            const hrs = Math.floor(totalSec / 3600);
+            const mins = Math.floor((totalSec % 3600) / 60);
+            const secs = totalSec % 60;
+
+            document.getElementById('cdHours').textContent = String(hrs).padStart(2, '0');
+            document.getElementById('cdMinutes').textContent = String(mins).padStart(2, '0');
+            document.getElementById('cdSeconds').textContent = String(secs).padStart(2, '0');
+
+            const ticker = document.getElementById('breakingNewsText');
+            ticker.textContent = `🔴 अंतिम चेतावनी: ठीक ${hrs} घंटे ${mins} मिनट बाद चुनाव परिणाम घोषित होंगे! अपने प्रत्याशी को वोट देकर आगे करें...`;
+        }
+
+        function adminStartTwoHourCountdown() {
+            const twoHoursLater = Date.now() + (2 * 60 * 60 * 1000);
+            db.ref('electionControl').set({
+                countdownEndTime: twoHoursLater,
+                isResultDeclared: false
+            }).then(() => {
+                showToast('2 घंटे का काउंटडाउन सक्रिय! मतदाताओं को स्क्रीन पर दिखेगा।', 'fa-clock', 'text-amber-400');
+            });
+        }
+
+        function adminForceDeclareResult() {
+            db.ref('electionControl').set({
+                countdownEndTime: null,
+                isResultDeclared: true
+            }).then(() => {
+                showToast('परिणाम आधिकारिक रूप से घोषित!', 'fa-trophy', 'text-amber-400');
+            });
+        }
+
+        function adminResetCountdown() {
+            db.ref('electionControl').set({
+                countdownEndTime: null,
+                isResultDeclared: false
+            }).then(() => {
+                showToast('काउंटडाउन रीसेट कर दिया गया।', 'fa-rotate-left', 'text-slate-300');
+            });
+        }
+
+        function triggerGrandVictoryCelebration() {
+            if (confettiInterval) clearInterval(confettiInterval);
+            const duration = 12 * 1000;
+            const animationEnd = Date.now() + duration;
+
+            confettiInterval = setInterval(() => {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(confettiInterval);
+                confetti({
+                    particleCount: 40,
+                    startVelocity: 30,
+                    spread: 360,
+                    origin: { x: Math.random(), y: Math.random() * 0.4 }
+                });
+            }, 450);
+        }
+
+        function requestLocationAndCastVote(candidateKey) {
+            if (pollState.isResultDeclared) {
+                alert("⛔ मतदान संपन्न हो चुका है एवं परिणाम घोषित कर दिए गए हैं!");
+                return;
+            }
+            if (isDeviceLocked || localStorage.getItem('suwana_voted_permanently')) {
+                showToast('इस डिवाइस से पहले ही वोट डाला जा चुका है!', 'fa-ban', 'text-rose-400');
+                lockThisDevice();
+                return;
+            }
+            if (!navigator.geolocation) {
+                alert("⛔ त्रुटि: GPS आवश्यक है!");
+                return;
+            }
+
+            showToast('GPS लोकेशन जांची जा रही है...', 'fa-location-crosshairs', 'text-blue-400');
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const distKm = calculateDistanceKm(SUWANA_LAT, SUWANA_LNG, pos.coords.latitude, pos.coords.longitude);
+                    if (distKm <= ALLOWED_RADIUS_KM) {
+                        executeVoteSubmission(candidateKey, distKm);
+                    } else {
+                        alert(`⛔ मतदान अमान्य!\nआप सुवाणा ग्राम पंचायत से लगभग ${distKm.toFixed(1)} किमी दूर हैं। (दायरा: 10 KM)`);
+                    }
+                },
+                () => alert("⛔ कृपया GPS लोकेशन की अनुमति (Allow) दें!"),
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+
+        // [मानक एवं निष्पक्ष मतदान प्रक्रिया]
+        function executeVoteSubmission(candidateKey, distKm) {
+            const led = document.getElementById(`led-${candidateKey}`);
+            if (led) led.className = 'w-4 h-4 rounded-full bg-red-600 pulse-led transition-all duration-200';
+            playEVMBeepSound();
+
+            const targetCand = candidatesList.find(c => c.id === candidateKey);
+            const candName = targetCand ? targetCand.name : candidateKey;
+            const now = new Date();
+            const timeStr = now.toLocaleDateString('hi-IN') + ' ' + now.toLocaleTimeString('hi-IN');
+
+            const logEntry = { 
+                time: timeStr, 
+                device: voterDeviceToken, 
+                candidateKey: candidateKey, 
+                candidateName: candName, 
+                dist: distKm.toFixed(2) + ' km' 
+            };
+
+            const updates = {};
+            updates['locked_devices/' + voterDeviceToken] = true;
+            updates['votes/' + candidateKey] = (pollState.votes[candidateKey] || 0) + 1;
+            updates['voterLogs/' + db.ref('voterLogs').push().key] = logEntry;
+
+            db.ref().update(updates).then(() => {
+                localStorage.setItem('suwana_voted_permanently', 'true');
+                lockThisDevice();
+                showToast('आपका मत सफलतापूर्वक दर्ज हुआ!', 'fa-check', 'text-emerald-400');
+            }).catch((err) => {
+                showToast('वोट दर्ज करने में त्रुटि: ' + err.message, 'fa-triangle-exclamation', 'text-rose-400');
+            });
+        }
+
+        function updateUI() {
+            let total = 0;
+            candidatesList.forEach(cand => total += (pollState.votes[cand.id] || 0));
+            document.getElementById('totalVotesNumber').textContent = total.toLocaleString('hi-IN');
+
+            candidatesList.forEach(cand => {
+                const k = cand.id;
+                const v = pollState.votes[k] || 0;
+                const pct = total > 0 ? Math.round((v / total) * 100) : 0;
+                const vEl = document.getElementById(`bar-votes-${k}`);
+                const pEl = document.getElementById(`bar-pct-${k}`);
+                const bEl = document.getElementById(`progress-${k}`);
+                const lEl = document.getElementById(`lead-${k}`);
+
+                if (vEl) vEl.textContent = `(${v} वोट)`;
+                if (pEl) pEl.textContent = `${pct}%`;
+                if (bEl) bEl.style.width = `${pct}%`;
+                if (lEl) lEl.classList.add('hidden');
+            });
+
+            const sortedCandidates = [...candidatesList].map(cand => ({
+                id: cand.id,
+                name: cand.name,
+                img: cand.img,
+                votes: pollState.votes[cand.id] || 0
+            })).sort((a, b) => b.votes - a.votes);
+
+            const c1 = sortedCandidates[0];
+            const c2 = sortedCandidates[1] || { name: 'अन्य', votes: 0, img: '' };
+            const diff = (c1.votes - c2.votes);
+
+            const winnerCard = document.getElementById('winnerPodiumCard');
+            const battleCard = document.getElementById('battleFaceoffCard');
+            const liveBadge = document.getElementById('headerLiveBadge');
+            const ballotBadge = document.getElementById('ballotStatusBadge');
+            const ticker = document.getElementById('breakingNewsText');
+
+            if (pollState.isResultDeclared) {
+                winnerCard.classList.remove('hidden');
+                battleCard.classList.add('hidden');
+                
+                document.getElementById('winnerName').textContent = c1.name;
+                document.getElementById('winnerVotes').textContent = c1.votes;
+                document.getElementById('winnerLeadMargin').textContent = `+${diff}`;
+                document.getElementById('winnerPhoto').src = c1.img;
+                document.getElementById('winnerSummaryText').innerHTML = `🏆 <strong>${c1.name}</strong> ने <strong>${diff} वोटों</strong> की बढ़त से सुवाणा में जीत हासिल की!`;
+
+                liveBadge.textContent = '🏆 परिणाम घोषित';
+                liveBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-slate-950 border border-amber-400';
+
+                ballotBadge.textContent = 'मतदान समाप्त';
+                ballotBadge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-700 text-slate-300 border border-slate-600';
+
+                ticker.textContent = `🏆 चुनाव परिणाम: ${c1.name} ${diff} वोटों से विजयी रहे! दूसरे स्थान पर ${c2.name}... सुवाणा का जनादेश!`;
+                
+                const leadTag = document.getElementById(`lead-${c1.id}`);
+                if (leadTag) leadTag.classList.remove('hidden');
+            } else {
+                winnerCard.classList.add('hidden');
+                battleCard.classList.remove('hidden');
+
+                document.getElementById('battleName1').textContent = c1.name;
+                document.getElementById('battleVotes1').innerHTML = `${c1.votes} <span class="text-xs font-sans font-bold text-slate-400">वोट</span>`;
+                document.getElementById('battleImg1').src = c1.img;
+
+                document.getElementById('battleName2').textContent = c2.name;
+                document.getElementById('battleVotes2').innerHTML = `${c2.votes} <span class="text-xs font-sans font-bold text-slate-400">वोट</span>`;
+                document.getElementById('battleImg2').src = c2.img;
+
+                document.getElementById('battleDiffNumber').textContent = `+${diff}`;
+                document.getElementById('clashVerdictText').innerHTML = `🔥 <strong>${c1.name}</strong>, ${c2.name} से <strong>${diff} वोटों</strong> से आगे चल रहे हैं!`;
+            }
+
+            renderChart();
+        }
+
+        function renderChart() {
+            const canvas = document.getElementById('electionChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const labels = candidatesList.map(c => c.name);
+            const dataVals = candidatesList.map(c => pollState.votes[c.id] || 0);
+            const bgColors = candidatesList.map((_, i) => getColorForIndex(i).chartBg);
+            const borderColors = candidatesList.map((_, i) => getColorForIndex(i).chartBorder);
+
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: chartType,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'वोट संख्या',
+                        data: dataVals,
+                        backgroundColor: bgColors,
+                        borderColor: borderColors,
+                        borderWidth: 2,
+                        borderRadius: chartType === 'bar' ? 10 : 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 300 },
+                    plugins: {
+                        legend: { display: chartType === 'doughnut', position: 'bottom', labels: { color: '#f8fafc' } }
+                    },
+                    scales: chartType === 'bar' ? {
+                        y: { beginAtZero: true, ticks: { precision: 0, color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { ticks: { color: '#f8fafc', font: { weight: 'bold' } }, grid: { display: false } }
+                    } : {}
+                }
+            });
+        }
+
+        function toggleChartType(t) {
+            chartType = t;
+            document.getElementById('chartBarBtn').className = t === 'bar' ? 'px-3 py-1 text-xs rounded-lg font-bold bg-blue-600 text-white transition' : 'px-3 py-1 text-xs rounded-lg font-bold text-slate-400 transition';
+            document.getElementById('chartPieBtn').className = t === 'doughnut' ? 'px-3 py-1 text-xs rounded-lg font-bold bg-blue-600 text-white transition' : 'px-3 py-1 text-xs rounded-lg font-bold text-slate-400 transition';
+            renderChart();
+        }
+
+        function triggerQuickRefresh() {
+            const icon = document.getElementById('syncSpinIcon');
+            const fIcon = document.getElementById('floatSyncIcon');
+            if (icon) icon.classList.add('animate-spin');
+            if (fIcon) fIcon.classList.add('animate-spin');
+            setTimeout(() => {
+                if (icon) icon.classList.remove('animate-spin');
+                if (fIcon) fIcon.classList.remove('animate-spin');
+                showToast('ताजा परिणाम अपडेट हुए!', 'fa-arrows-rotate', 'text-amber-400');
+            }, 600);
+        }
+
+        function shareViaWhatsApp() {
+            const baseUrl = window.location.href.split('?')[0];
+            const currentUrl = baseUrl + '?v=live_poll';
+            let msg = '';
+            if (pollState.isResultDeclared) {
+                msg = `🏆 *सुवाणा ग्राम पंचायत चुनाव 2026 - आधिकारिक परिणाम घोषित!*\n\nसुवाणा का फाइनल जनादेश व पूरा परिणाम देखने के लिए नीचे दिए गए लिंक पर क्लिक करें 👇\n${currentUrl}`;
+            } else if (pollState.countdownEndTime) {
+                msg = `⚠️ *सुवाणा ग्राम पंचायत चुनाव - अंतिम 2 घंटे शेष!*\n\nठीक 2 घंटे बाद चुनाव परिणाम घोषित होने वाले हैं! अपने प्रत्याशी को जिताने के लिए तुरंत वोट करें 👇\n${currentUrl}`;
+            } else {
+                msg = `🗳️ *सुवाणा ग्राम पंचायत चुनाव 2026 - लाइव रुझान!*\n\nकौन चल रहा है आगे? लाइव स्कोर देखें 👇\n${currentUrl}`;
+            }
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function copyShareLink() {
+            const baseUrl = window.location.href.split('?')[0];
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.value = baseUrl + '?v=live_poll';
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            showToast('लिंक कॉपी हो गया!', 'fa-copy', 'text-blue-400');
+        }
+
+        function openAdminModal() {
+            document.getElementById('adminModal').classList.remove('hidden');
+            if (isAdminLoggedIn) {
+                document.getElementById('adminPinView').classList.add('hidden');
+                document.getElementById('adminControlsView').classList.remove('hidden');
+                updateAdminLogsTable();
+            } else {
+                document.getElementById('adminPinView').classList.remove('hidden');
+                document.getElementById('adminControlsView').classList.add('hidden');
+                document.getElementById('adminPinInput').value = '';
+            }
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.add('hidden');
+        }
+
+        function verifyAdminPin() {
+            if (document.getElementById('adminPinInput').value.trim() === pollState.adminPin) {
+                isAdminLoggedIn = true;
+                document.getElementById('adminPinView').classList.add('hidden');
+                document.getElementById('adminControlsView').classList.remove('hidden');
+                updateAdminLogsTable();
+                showToast('प्रबंधन सत्र सफलतापूर्वक आरंभ हुआ', 'fa-lock-open', 'text-emerald-400');
+            } else {
+                showToast('अमान्य पिन कोड दर्ज किया गया', 'fa-triangle-exclamation', 'text-rose-400');
+            }
+        }
+
+        function adminChangePIN() {
+            const p = document.getElementById('newCustomPinInput').value.trim();
+            if (p.length < 3) return showToast('नया पिन कोड दर्ज करें');
+            db.ref('adminPin').set(p).then(() => {
+                pollState.adminPin = p;
+                showToast('पिन कोड सफलतापूर्वक अद्यतित किया गया');
+            });
+        }
+
+        function logoutAdmin() {
+            isAdminLoggedIn = false;
+            closeAdminModal();
+        }
+
+        function updateAdminLogsTable() {
+            const tbody = document.getElementById('adminLogsTableBody');
+            const count = document.getElementById('adminTotalLogsCount');
+            if (!tbody) return;
+            const logs = pollState.voterLogs || [];
+            count.textContent = `${logs.length} प्रविष्टियां`;
+            if (logs.length === 0) return;
+            tbody.innerHTML = logs.map((l, idx) => `
+                <tr class="hover:bg-slate-800">
+                    <td class="p-2 text-slate-400">${idx + 1}</td>
+                    <td class="p-2 whitespace-nowrap">${l.time}</td>
+                    <td class="p-2 text-amber-400 font-bold">${l.device}</td>
+                    <td class="p-2"><span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">${l.candidateName}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function downloadVoterListCSV() {
+            let csv = '\uFEFFक्र.सं.,तारीख व समय,डिवाइस,किसे वोट दिया\n';
+            (pollState.voterLogs || []).forEach((l, i) => {
+                csv += `"${i+1}","${l.time}","${l.device}","${l.candidateName}"\n`;
+            });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            a.download = `Suwana_Votes_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        }
+
+        document.getElementById('soundToggleBtn').addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundIcon').className = soundEnabled ? 'fa-solid fa-volume-high text-emerald-400' : 'fa-solid fa-volume-xmark text-rose-400';
+        });
+
+        window.addEventListener('load', () => {
+            verifyDeviceStatus();
+
+            db.ref('candidates').on('value', (snap) => {
+                const data = snap.val();
+                if (data && Array.isArray(data)) candidatesList = data;
+                renderBallotAndProgressContainers();
+                updateUI();
+            });
+
+            db.ref('votes').on('value', (snap) => {
+                pollState.votes = snap.val() || {};
+                updateUI();
+            });
+
+            db.ref('adminPin').on('value', (snap) => {
+                if (snap.val()) pollState.adminPin = snap.val();
+            });
+
+            db.ref('electionControl').on('value', (snap) => {
+                const ctrl = snap.val() || {};
+                pollState.countdownEndTime = ctrl.countdownEndTime || null;
+                pollState.isResultDeclared = !!ctrl.isResultDeclared;
+
+                if (pollState.isResultDeclared) {
+                    triggerGrandVictoryCelebration();
+                }
+
+                renderBallotAndProgressContainers();
+                updateUI();
+                updateCountdownTimer();
+            });
+
+            if (countdownTimerInterval) clearInterval(countdownTimerInterval);
+            countdownTimerInterval = setInterval(updateCountdownTimer, 1000);
+
+            db.ref('voterLogs').on('value', (snap) => {
+                const o = snap.val();
+                pollState.voterLogs = [];
+                if (o) for (let k in o) pollState.voterLogs.unshift(o[k]);
+                updateAdminLogsTable();
+            });
+        });
+    </script>
+</body>
+</html>
