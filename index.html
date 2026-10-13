@@ -538,6 +538,22 @@
             gap: 10px;
             border-left: 4px solid var(--primary-accent);
         }
+
+        @media print {
+            body * { visibility: hidden; }
+            #adminSingleResultCardView, #adminSingleResultCardView * { visibility: visible; }
+            #adminSingleResultCardView {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 15px;
+                box-shadow: none;
+                border: 1px solid #000;
+            }
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -623,7 +639,7 @@
             </div>
         </section>
 
-        <!-- 2. ADMIN DASHBOARD -->
+        <!-- 2. ADMIN DASHBOARD (अधिकार 3 और 4 यहाँ दिए गए हैं) -->
         <section id="adminSection" class="hidden">
             <div class="controls-card">
                 <div class="controls-left">
@@ -637,7 +653,21 @@
                 </div>
             </div>
 
-            <div class="glass-card" style="padding: 20px;">
+            <!-- एडमिन टैब नेविगेशन -->
+            <div class="instructor-tabs" style="margin-bottom: 16px;">
+                <button class="inst-tab-btn active" id="adminTabBtnManage" onclick="switchAdminTab('manage')">
+                    <i class="fa-solid fa-id-card-clip"></i> 1. ट्रेड व अनुदेशक प्रबंधन
+                </button>
+                <button class="inst-tab-btn" id="adminTabBtnLedger" onclick="switchAdminTab('ledger')">
+                    <i class="fa-solid fa-award"></i> 2. वार्षिक / सत्रवार संचित लेजर (बटन 3)
+                </button>
+                <button class="inst-tab-btn" id="adminTabBtnResult" onclick="switchAdminTab('result')">
+                    <i class="fa-solid fa-id-card"></i> 3. व्यक्तिगत छात्र रिजल्ट कार्ड (बटन 4)
+                </button>
+            </div>
+
+            <!-- एडमिन सेक्शन 1: प्रबंधन -->
+            <div id="adminSecManage" class="glass-card" style="padding: 20px;">
                 <h3 style="font-size: 1rem; margin-bottom: 14px; color: var(--primary);">
                     <i class="fa-solid fa-id-card-clip"></i> पंजीकृत ट्रेड एवं अनुदेशक सूची
                 </h3>
@@ -657,9 +687,156 @@
                     </table>
                 </div>
             </div>
+
+            <!-- एडमिन सेक्शन 2: वार्षिक संचित लेजर (पूर्व बटन 3) -->
+            <div id="adminSecLedger" class="hidden">
+                <div class="controls-card">
+                    <div class="controls-left">
+                        <label style="font-weight: 700; color: var(--primary);">ट्रेड चुनें:</label>
+                        <select id="adminLedgerTradeSelect" onchange="renderAdminConsolidatedLedger()" style="padding: 6px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); font-weight: 600;"></select>
+                    </div>
+                    <div class="controls-right">
+                        <button class="app-btn app-btn-excel" onclick="exportAdminConsolidatedToExcel()"><i class="fa-solid fa-file-excel"></i> वार्षिक लेजर एक्सेल (.xlsx)</button>
+                        <button class="app-btn app-btn-dark" onclick="renderAdminConsolidatedLedger()"><i class="fa-solid fa-rotate"></i> रीफ्रेश करें</button>
+                    </div>
+                </div>
+
+                <div class="table-shell">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th rowspan="2" class="col-sticky-name">छात्र का नाम</th>
+                                <th rowspan="2" class="col-roll">रोल</th>
+                                <th colspan="4" style="background: #e0f2fe; color: #0369a1;">सत्र कुल उपस्थिति विवरण</th>
+                                <th colspan="4" style="background: #fef3c7; color: #92400e;">मासिक टेस्टों का संचित योग</th>
+                                <th rowspan="2" style="background: #f0fdf4; color: #166534;">वार्षिक पात्रता स्थिति</th>
+                            </tr>
+                            <tr>
+                                <th style="background: #eff6ff;">कुल कार्यदिवस</th>
+                                <th style="background: #eff6ff;">कुल उपस्थिति (P)</th>
+                                <th style="background: #eff6ff;">कुल अनुपस्थिति (A)</th>
+                                <th style="background: #dbeafe; color: #1e40af;">उपस्थिति %</th>
+                                <th style="background: #fffbeb;">सत्र टेस्ट संख्या</th>
+                                <th style="background: #fffbeb;">कुल प्राप्तांक</th>
+                                <th style="background: #fffbeb;">कुल पूर्णांक</th>
+                                <th style="background: #fef08a; color: #854d0e;">टेस्ट %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminFinalReportTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- एडमिन सेक्शन 3: व्यक्तिगत छात्र रिजल्ट कार्ड (पूर्व बटन 4) -->
+            <div id="adminSecResult" class="hidden">
+                <div class="controls-card no-print">
+                    <div class="controls-left">
+                        <label style="font-weight: 700; color: var(--primary);">ट्रेड:</label>
+                        <select id="adminResultTradeSelect" onchange="populateAdminStudentResultDropdown()" style="padding: 6px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); font-weight: 600;"></select>
+                        
+                        <label style="font-weight: 700; color: #334155; margin-left: 6px;">छात्र:</label>
+                        <select id="adminSelectStudentForResult" onchange="loadAdminStudentResultFromSelect()" style="padding: 6px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); font-weight: 600; min-width: 200px;"></select>
+
+                        <input type="text" id="adminSearchStudentIdInput" placeholder="आईडी या रोल दर्ज करें" style="padding: 6px 10px; border-radius: 8px; border: 1.5px solid var(--border-color); font-size: 0.85rem;">
+                        <button class="app-btn app-btn-primary" onclick="searchAdminStudentResultById()"><i class="fa-solid fa-arrow-right"></i> खोजें</button>
+                    </div>
+                    <div class="controls-right">
+                        <button class="app-btn app-btn-success" onclick="window.print()"><i class="fa-solid fa-print"></i> प्रिंट / PDF सेव करें</button>
+                    </div>
+                </div>
+
+                <div id="adminSingleResultCardView" class="scorecard-box" style="margin-top: 10px;">
+                    <div style="text-align: center; border-bottom: 2px solid var(--primary); padding-bottom: 12px; margin-bottom: 16px;">
+                        <h2 style="color: var(--primary); font-size: 1.35rem; font-weight: 800;">राजकीय औद्योगिक प्रशिक्षण संस्थान, कोटड़ी (भीलवाड़ा)</h2>
+                        <p style="font-size: 0.95rem; font-weight: 700; color: #334155; margin-top: 3px;">सत्र प्रगति एवं समग्र वार्षिक मूल्यांकन रिपोर्ट कार्ड</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; background: #f8fafc; padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 18px;">
+                        <div><strong style="color:var(--text-muted); font-size:0.8rem;">प्रशिक्षु का नाम:</strong> <div id="admResCardName" style="font-weight:800; font-size:1.1rem; color:var(--primary);">-</div></div>
+                        <div><strong style="color:var(--text-muted); font-size:0.8rem;">रोल नंबर:</strong> <div id="admResCardRoll" style="font-weight:700; font-size:1rem;">-</div></div>
+                        <div><strong style="color:var(--text-muted); font-size:0.8rem;">छात्र आईडी:</strong> <div id="admResCardId" style="font-weight:700; font-size:1rem; color:#475569;">-</div></div>
+                        <div><strong style="color:var(--text-muted); font-size:0.8rem;">ट्रेड / प्रकार:</strong> <div id="admResCardTrade" style="font-weight:700; font-size:1rem;">-</div></div>
+                    </div>
+
+                    <div class="section-bar-title"><i class="fa-solid fa-calendar-check"></i> 1. सत्र कुल उपस्थिति एवं पात्रता सारांश (Annual Attendance)</div>
+                    <div class="stats-tri-grid">
+                        <div class="metric-card" style="background:#f0fdf4; border-color:#bbf7d0;">
+                            <div class="title" style="color:#166534;">सत्र में कुल उपस्थिति</div>
+                            <div class="value" id="admResCardAttP" style="color:#16a34a;">0</div>
+                            <div class="sub">सत्र कुल कार्यदिवस: <strong id="admResCardAttW">0</strong> दिन</div>
+                        </div>
+                        <div class="metric-card" style="background:#fef2f2; border-color:#fecaca;">
+                            <div class="title" style="color:#991b1b;">सत्र में कुल अनुपस्थिति</div>
+                            <div class="value" id="admResCardAttA" style="color:#dc2626;">0</div>
+                            <div class="sub">कुल अनुपस्थित कार्यदिवस</div>
+                        </div>
+                        <div class="metric-card" style="background:#eff6ff; border-color:#bfdbfe;">
+                            <div class="title" style="color:#1e40af;">वार्षिक उपस्थिति प्रतिशत</div>
+                            <div class="value" id="admResCardAttPct" style="color:var(--primary);">0%</div>
+                            <div class="progress-track"><div class="progress-bar-fill" id="admResCardAttBar" style="width:0%; background:var(--primary);"></div></div>
+                        </div>
+                    </div>
+                    <div style="background: #ffffff; padding: 10px 14px; border-radius: var(--radius-md); border: 1.5px solid var(--border-color); margin-bottom: 20px;">
+                        <strong>NCVT परीक्षा पात्रता:</strong> <span id="admResCardEligibility">-</span>
+                    </div>
+
+                    <div class="section-bar-title"><i class="fa-solid fa-pen-ruler"></i> 2. मासिक टेस्ट संचित सेशनल परिणाम (Consolidated Marks)</div>
+                    <div class="stats-tri-grid">
+                        <div class="metric-card">
+                            <div class="title">सत्र में दिए गए कुल टेस्ट</div>
+                            <div class="value" id="admResCardTestCount" style="color:#2563eb;">0</div>
+                            <div class="sub">आयोजित मासिक टेस्ट संख्या</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="title">टेस्ट कुल प्राप्तांक</div>
+                            <div class="value" id="admResCardTestMarks" style="color:#059669;">0 / 0</div>
+                            <div class="sub">सभी टेस्टों का कुल योग</div>
+                        </div>
+                        <div class="metric-card" style="background:#fefce8; border-color:#fef08a;">
+                            <div class="title" style="color:#854d0e;">वार्षिक टेस्ट प्रतिशत</div>
+                            <div class="value" id="admResCardTestPct" style="color:#d97706;">0%</div>
+                            <div class="sub">ग्रेड: <strong id="admResCardGrade">-</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="section-bar-title"><i class="fa-solid fa-list-check"></i> 3. माह-दर-माह प्रगति विवरण (Month-Wise History)</div>
+                    <div class="table-shell">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>माह (Month)</th>
+                                    <th>कार्यदिवस</th>
+                                    <th>उपस्थित (P)</th>
+                                    <th>अनुपस्थित (A)</th>
+                                    <th>उपस्थिति %</th>
+                                    <th>टेस्ट प्राप्तांक / पूर्णांक</th>
+                                    <th>टेस्ट %</th>
+                                    <th>रिकॉर्ड</th>
+                                    <th>डायरी</th>
+                                    <th>आचरण</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admResCardMonthHistoryBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px; padding: 0 10px;">
+                        <div style="text-align: center; border-top: 1.5px solid #64748b; padding-top: 6px; min-width: 140px; font-size: 0.85rem; font-weight: 700;">
+                            हस्ताक्षर छात्र / अभिभावक
+                        </div>
+                        <div style="text-align: center; border-top: 1.5px solid #64748b; padding-top: 6px; min-width: 140px; font-size: 0.85rem; font-weight: 700;">
+                            हस्ताक्षर ट्रेड अनुदेशक
+                        </div>
+                        <div style="text-align: center; border-top: 1.5px solid #64748b; padding-top: 6px; min-width: 140px; font-size: 0.85rem; font-weight: 700;">
+                            हस्ताक्षर अधीक्षक / प्राचार्य
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </section>
 
-        <!-- 3. INSTRUCTOR DASHBOARD -->
+        <!-- 3. INSTRUCTOR DASHBOARD (केवल 2 आवश्यक टैब्स) -->
         <section id="instructorSection" class="hidden">
             
             <div class="instructor-tabs">
@@ -682,11 +859,9 @@
                         </div>
                         <button class="app-btn app-btn-primary" onclick="openModal('addStudentModal')"><i class="fa-solid fa-user-plus"></i> नया छात्र जोड़ें</button>
                         <button class="app-btn app-btn-secondary" onclick="openStudentCredentialsModal()"><i class="fa-solid fa-id-card"></i> छात्र प्रबंधन / पासवर्ड</button>
-                        <!-- अवकाश जोड़ें बटन -->
                         <button class="app-btn app-btn-warning" onclick="openHolidayPrompt()"><i class="fa-solid fa-umbrella-beach"></i> अवकाश जोड़ें</button>
                     </div>
                     <div class="controls-right">
-                        <!-- आज की हाजिरी बटन -->
                         <button class="app-btn app-btn-success" onclick="openTodayRollCallModal()"><i class="fa-solid fa-clipboard-user"></i> आज की हाजिरी (Roll Call)</button>
                         <button class="app-btn app-btn-excel" onclick="exportAttendanceToExcel()"><i class="fa-solid fa-file-excel"></i> अटेंडेंस एक्सेल (.xlsx)</button>
                         <button class="app-btn app-btn-dark" onclick="syncWithFirebase()"><i class="fa-solid fa-cloud-arrow-up"></i> सेव करें</button>
@@ -1089,7 +1264,7 @@
         </div>
     </div>
 
-    <!-- 8. Daily Roll-Call Modal (सक्रिय मॉडल) -->
+    <!-- 8. Daily Roll-Call Modal -->
     <div id="todayRollCallModal" class="modal-backdrop hidden">
         <div class="modal-content" style="max-width: 640px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1.5px solid var(--border-color); padding-bottom: 8px;">
@@ -1237,7 +1412,7 @@
         }
 
         function populateTradeDropdowns() {
-            const selects = ['loginInstTrade', 'loginStudentTrade', 'instAssignTrade'];
+            const selects = ['loginInstTrade', 'loginStudentTrade', 'instAssignTrade', 'adminLedgerTradeSelect', 'adminResultTradeSelect'];
             const trades = getTradesList();
 
             selects.forEach(id => {
@@ -1365,6 +1540,8 @@
             if (currentRole === 'admin') {
                 document.getElementById('adminSection').classList.remove('hidden');
                 document.getElementById('roleLabel').innerHTML = `<i class="fa-solid fa-shield-halved"></i> एडमिन`;
+                populateTradeDropdowns();
+                switchAdminTab('manage');
             } else if (currentRole === 'instructor') {
                 document.getElementById('instructorSection').classList.remove('hidden');
                 const isEngg = isEnggTrade(currentTrade);
@@ -1396,23 +1573,57 @@
             showToast("लॉगआउट संपन्न!");
         }
 
+        // एडमिन टैब स्विचिंग
+        function switchAdminTab(tab) {
+            const btnManage = document.getElementById('adminTabBtnManage');
+            const btnLedger = document.getElementById('adminTabBtnLedger');
+            const btnResult = document.getElementById('adminTabBtnResult');
+
+            const secManage = document.getElementById('adminSecManage');
+            const secLedger = document.getElementById('adminSecLedger');
+            const secResult = document.getElementById('adminSecResult');
+
+            btnManage?.classList.remove('active');
+            btnLedger?.classList.remove('active');
+            btnResult?.classList.remove('active');
+
+            secManage?.classList.add('hidden');
+            secLedger?.classList.add('hidden');
+            secResult?.classList.add('hidden');
+
+            if (tab === 'manage') {
+                btnManage?.classList.add('active');
+                secManage?.classList.remove('hidden');
+                renderAdminView();
+            } else if (tab === 'ledger') {
+                btnLedger?.classList.add('active');
+                secLedger?.classList.remove('hidden');
+                renderAdminConsolidatedLedger();
+            } else if (tab === 'result') {
+                btnResult?.classList.add('active');
+                secResult?.classList.remove('hidden');
+                populateAdminStudentResultDropdown();
+            }
+        }
+
         function switchInstructorTab(tab) {
             const btnAtt = document.getElementById('tabBtnAtt');
             const btnEval = document.getElementById('tabBtnEval');
             const secAtt = document.getElementById('instTabAttendance');
             const secEval = document.getElementById('instTabEvaluation');
 
+            btnAtt?.classList.remove('active');
+            btnEval?.classList.remove('active');
+            secAtt?.classList.add('hidden');
+            secEval?.classList.add('hidden');
+
             if (tab === 'attendance') {
-                btnAtt.classList.add('active');
-                btnEval.classList.remove('active');
-                secAtt.classList.remove('hidden');
-                secEval.classList.add('hidden');
+                btnAtt?.classList.add('active');
+                secAtt?.classList.remove('hidden');
                 renderRegister();
             } else if (tab === 'evaluation') {
-                btnEval.classList.add('active');
-                btnAtt.classList.remove('active');
-                secEval.classList.remove('hidden');
-                secAtt.classList.add('hidden');
+                btnEval?.classList.add('active');
+                secEval?.classList.remove('hidden');
                 renderEvaluationTable();
             }
         }
@@ -1426,23 +1637,23 @@
             const viewMarks = document.getElementById('studSecMarks');
             const viewRec = document.getElementById('studSecRecords');
 
-            btnAtt.classList.remove('active');
-            btnMarks.classList.remove('active');
-            btnRec.classList.remove('active');
+            btnAtt?.classList.remove('active');
+            btnMarks?.classList.remove('active');
+            btnRec?.classList.remove('active');
 
-            viewAtt.classList.add('hidden');
-            viewMarks.classList.add('hidden');
-            viewRec.classList.add('hidden');
+            viewAtt?.classList.add('hidden');
+            viewMarks?.classList.add('hidden');
+            viewRec?.classList.add('hidden');
 
             if (sec === 'attendance') {
-                btnAtt.classList.add('active');
-                viewAtt.classList.remove('hidden');
+                btnAtt?.classList.add('active');
+                viewAtt?.classList.remove('hidden');
             } else if (sec === 'marks') {
-                btnMarks.classList.add('active');
-                viewMarks.classList.remove('hidden');
+                btnMarks?.classList.add('active');
+                viewMarks?.classList.remove('hidden');
             } else if (sec === 'records') {
-                btnRec.classList.add('active');
-                viewRec.classList.remove('hidden');
+                btnRec?.classList.add('active');
+                viewRec?.classList.remove('hidden');
             }
         }
 
@@ -2102,7 +2313,6 @@
                     appData.records[currentTrade][monthVal][sRoll] = {};
                 }
 
-                // जो पहले से उपस्थित है वो P रहेगा, अन्य डिफ़ॉल्ट रूप से A
                 const mStatus = appData.records[currentTrade][monthVal][sRoll][`${d}_m`] || 'A';
                 const eStatus = appData.records[currentTrade][monthVal][sRoll][`${d}_e`] || 'A';
 
@@ -2162,6 +2372,405 @@
                 renderRegister();
                 showToast("अवकाश सूची सफलतापूर्वक अपडेट कर दी गई!");
             }
+        }
+
+        // --- ADMIN: CONSOLIDATED LEDGER & RESULT LOGIC ---
+        function renderAdminConsolidatedLedger() {
+            const tradeSel = document.getElementById('adminLedgerTradeSelect');
+            const targetTrade = tradeSel ? tradeSel.value : getTradesList()[0];
+            if (!targetTrade) return;
+
+            const tStudents = getStudentList(targetTrade);
+            const tbody = document.getElementById('adminFinalReportTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (tStudents.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="11" style="padding: 24px; color: var(--text-muted);">इस ट्रेड में कोई छात्र उपलब्ध नहीं है।</td></tr>`;
+                return;
+            }
+
+            const allRecMonths = Object.keys((appData.records && appData.records[targetTrade]) || {});
+            const allEvalMonths = Object.keys((appData.evaluations && appData.evaluations[targetTrade]) || {});
+            const allMonths = Array.from(new Set([...allRecMonths, ...allEvalMonths])).sort();
+
+            const monthWorkingDaysMap = {};
+            allMonths.forEach(mStr => {
+                const [y, m] = mStr.split('-').map(Number);
+                const totalD = new Date(y, m, 0).getDate();
+                const hols = (appData.holidays && appData.holidays[targetTrade] && appData.holidays[targetTrade][mStr]) || [];
+                let suns = 0, chols = 0;
+                for (let d = 1; d <= totalD; d++) {
+                    if (new Date(y, m - 1, d).getDay() === 0) suns++;
+                    else if (hols.includes(d)) chols++;
+                }
+                monthWorkingDaysMap[mStr] = totalD - (suns + chols);
+            });
+
+            const isEngg = isEnggTrade(targetTrade);
+
+            tStudents.forEach(st => {
+                const sRoll = String(st.roll).trim();
+                let pastW = parseInt(st.pastWorkingDays) || 0;
+                let pastP = parseInt(st.pastPresentDays) || 0;
+                let recordedPresent = 0;
+                let recordedWorking = 0;
+                let recordedAbsent = 0;
+
+                allMonths.forEach(mStr => {
+                    const mWork = monthWorkingDaysMap[mStr] || 0;
+                    recordedWorking += mWork;
+                    const mData = (appData.records && appData.records[targetTrade] && appData.records[targetTrade][mStr] && appData.records[targetTrade][mStr][sRoll]) || {};
+                    const [y, m] = mStr.split('-').map(Number);
+                    const totalD = new Date(y, m, 0).getDate();
+                    const hols = (appData.holidays && appData.holidays[targetTrade] && appData.holidays[targetTrade][mStr]) || [];
+
+                    for (let d = 1; d <= totalD; d++) {
+                        const isSun = (new Date(y, m - 1, d).getDay() === 0);
+                        const isHol = hols.includes(d);
+                        if (!isSun && !isHol) {
+                            const eVal = mData[`${d}_e`] || 'P';
+                            if (eVal === 'P') recordedPresent++;
+                            else if (eVal === 'A') recordedAbsent++;
+                        }
+                    }
+                });
+
+                const totalW = pastW + recordedWorking;
+                const totalP = pastP + recordedPresent;
+                const totalA = Math.max(0, totalW - totalP);
+                const attPct = totalW > 0 ? ((totalP / totalW) * 100).toFixed(1) : 0;
+
+                let testCount = 0;
+                let totalObt = 0;
+                let totalMM = 0;
+
+                allMonths.forEach(mStr => {
+                    const ev = (appData.evaluations && appData.evaluations[targetTrade] && appData.evaluations[targetTrade][mStr] && appData.evaluations[targetTrade][mStr][sRoll]);
+                    const mm = getMaxMarksConfig(targetTrade, mStr);
+
+                    if (ev && (ev.tt !== '' || ev.tp !== '' || ev.es !== '')) {
+                        testCount++;
+                        let mObt = (parseFloat(ev.tt) || 0) + (parseFloat(ev.tp) || 0) + (parseFloat(ev.es) || 0);
+                        let mMM = (parseFloat(mm.tt) || 20) + (parseFloat(mm.tp) || 20) + (parseFloat(mm.es) || 20);
+                        if (isEngg) {
+                            mObt += (parseFloat(ev.wcs) || 0) + (parseFloat(ev.ed) || 0);
+                            mMM += (parseFloat(mm.wcs) || 20) + (parseFloat(mm.ed) || 20);
+                        }
+                        totalObt += mObt;
+                        totalMM += mMM;
+                    }
+                });
+
+                const testPct = totalMM > 0 ? ((totalObt / totalMM) * 100).toFixed(1) : 0;
+                const isEligible = parseFloat(attPct) >= 75;
+                const badgeCls = isEligible ? 'pct-high' : 'pct-low';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="col-sticky-name">${st.name}</td>
+                        <td class="col-roll">${sRoll}</td>
+                        <td>${totalW} दिन</td>
+                        <td style="color:#16a34a; font-weight:700;">${totalP}</td>
+                        <td style="color:#dc2626; font-weight:700;">${totalA}</td>
+                        <td><span class="pct-badge ${badgeCls}">${attPct}%</span></td>
+                        <td><strong>${testCount}</strong> टेस्ट</td>
+                        <td style="color:#1e40af; font-weight:700;">${totalObt}</td>
+                        <td>${totalMM}</td>
+                        <td><strong>${testPct}%</strong></td>
+                        <td>
+                            ${isEligible 
+                                ? '<span style="color:#16a34a; font-weight:700;"><i class="fa-solid fa-circle-check"></i> परीक्षा हेतु पात्र</span>' 
+                                : '<span style="color:#dc2626; font-weight:700;"><i class="fa-solid fa-triangle-exclamation"></i> अपात्र (&lt; 75%)</span>'}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function exportAdminConsolidatedToExcel() {
+            const tradeSel = document.getElementById('adminLedgerTradeSelect');
+            const targetTrade = tradeSel ? tradeSel.value : getTradesList()[0];
+            if (!targetTrade) { alert("कृपया ट्रेड चुनें!"); return; }
+
+            const tStudents = getStudentList(targetTrade);
+            if (tStudents.length === 0) { alert("कोई छात्र पंजीकृत नहीं है!"); return; }
+
+            const allRecMonths = Object.keys((appData.records && appData.records[targetTrade]) || {});
+            const allEvalMonths = Object.keys((appData.evaluations && appData.evaluations[targetTrade]) || {});
+            const allMonths = Array.from(new Set([...allRecMonths, ...allEvalMonths])).sort();
+
+            const monthWorkingDaysMap = {};
+            allMonths.forEach(mStr => {
+                const [y, m] = mStr.split('-').map(Number);
+                const totalD = new Date(y, m, 0).getDate();
+                const hols = (appData.holidays && appData.holidays[targetTrade] && appData.holidays[targetTrade][mStr]) || [];
+                let suns = 0, chols = 0;
+                for (let d = 1; d <= totalD; d++) {
+                    if (new Date(y, m - 1, d).getDay() === 0) suns++;
+                    else if (hols.includes(d)) chols++;
+                }
+                monthWorkingDaysMap[mStr] = totalD - (suns + chols);
+            });
+
+            const isEngg = isEnggTrade(targetTrade);
+            const headers = [
+                "ट्रेड", "रोल नंबर", "छात्र का नाम", "छात्र आईडी",
+                "पूर्व संचित कार्यदिवस", "पूर्व संचित उपस्थिति",
+                "सत्र में कुल कार्यदिवस", "सत्र में कुल उपस्थिति", "सत्र में कुल अनुपस्थिति", "वार्षिक उपस्थिति प्रतिशत",
+                "सत्र में दिए गए टेस्ट", "टेस्ट कुल प्राप्तांक", "टेस्ट कुल पूर्णांक", "टेस्ट कुल प्रतिशत",
+                "NCVT परीक्षा पात्रता स्थिति"
+            ];
+
+            const excelRows = [headers];
+
+            tStudents.forEach(st => {
+                const sRoll = String(st.roll).trim();
+                let pastW = parseInt(st.pastWorkingDays) || 0;
+                let pastP = parseInt(st.pastPresentDays) || 0;
+                let recordedPresent = 0;
+                let recordedWorking = 0;
+
+                allMonths.forEach(mStr => {
+                    const mWork = monthWorkingDaysMap[mStr] || 0;
+                    recordedWorking += mWork;
+                    const mData = (appData.records && appData.records[targetTrade] && appData.records[targetTrade][mStr] && appData.records[targetTrade][mStr][sRoll]) || {};
+                    const [y, m] = mStr.split('-').map(Number);
+                    const totalD = new Date(y, m, 0).getDate();
+                    const hols = (appData.holidays && appData.holidays[targetTrade] && appData.holidays[targetTrade][mStr]) || [];
+
+                    for (let d = 1; d <= totalD; d++) {
+                        const isSun = (new Date(y, m - 1, d).getDay() === 0);
+                        const isHol = hols.includes(d);
+                        if (!isSun && !isHol) {
+                            const eVal = mData[`${d}_e`] || 'P';
+                            if (eVal === 'P') recordedPresent++;
+                        }
+                    }
+                });
+
+                const totalW = pastW + recordedWorking;
+                const totalP = pastP + recordedPresent;
+                const totalA = Math.max(0, totalW - totalP);
+                const attPct = totalW > 0 ? ((totalP / totalW) * 100).toFixed(1) : 0;
+
+                let testCount = 0;
+                let totalObt = 0;
+                let totalMM = 0;
+
+                allMonths.forEach(mStr => {
+                    const ev = (appData.evaluations && appData.evaluations[targetTrade] && appData.evaluations[targetTrade][mStr] && appData.evaluations[targetTrade][mStr][sRoll]);
+                    const mm = getMaxMarksConfig(targetTrade, mStr);
+
+                    if (ev && (ev.tt !== '' || ev.tp !== '' || ev.es !== '')) {
+                        testCount++;
+                        let mObt = (parseFloat(ev.tt) || 0) + (parseFloat(ev.tp) || 0) + (parseFloat(ev.es) || 0);
+                        let mMM = (parseFloat(mm.tt) || 20) + (parseFloat(mm.tp) || 20) + (parseFloat(mm.es) || 20);
+                        if (isEngg) {
+                            mObt += (parseFloat(ev.wcs) || 0) + (parseFloat(ev.ed) || 0);
+                            mMM += (parseFloat(mm.wcs) || 20) + (parseFloat(mm.ed) || 20);
+                        }
+                        totalObt += mObt;
+                        totalMM += mMM;
+                    }
+                });
+
+                const testPct = totalMM > 0 ? ((totalObt / totalMM) * 100).toFixed(1) : 0;
+                const eligibility = parseFloat(attPct) >= 75 ? "पात्र (Eligible)" : "अपात्र (Not Eligible)";
+
+                excelRows.push([
+                    targetTrade, sRoll, st.name, st.studentId,
+                    pastW, pastP, totalW, totalP, totalA, `${attPct}%`,
+                    testCount, totalObt, totalMM, `${testPct}%`, eligibility
+                ]);
+            });
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(excelRows);
+            XLSX.utils.book_append_sheet(wb, ws, "Consolidated_Ledger");
+            XLSX.writeFile(wb, `ITI_Kotri_${targetTrade}_Annual_Master_Ledger.xlsx`);
+            showToast("वार्षिक लेजर एक्सेल डाउनलोड हो गई!");
+        }
+
+        function populateAdminStudentResultDropdown() {
+            const tradeSel = document.getElementById('adminResultTradeSelect');
+            const targetTrade = tradeSel ? tradeSel.value : getTradesList()[0];
+            const sel = document.getElementById('adminSelectStudentForResult');
+            if (!sel || !targetTrade) return;
+            sel.innerHTML = '';
+
+            const tStudents = getStudentList(targetTrade);
+            if (tStudents.length === 0) {
+                sel.innerHTML = '<option value="">कोई छात्र मौजूद नहीं</option>';
+                return;
+            }
+
+            tStudents.forEach(st => {
+                sel.innerHTML += `<option value="${st.studentId}">${st.name} (रोल: ${st.roll} | ID: ${st.studentId})</option>`;
+            });
+            loadAdminStudentResultFromSelect();
+        }
+
+        function loadAdminStudentResultFromSelect() {
+            const sel = document.getElementById('adminSelectStudentForResult');
+            if (!sel || !sel.value) return;
+            renderAdminSingleStudentResultCard(sel.value);
+        }
+
+        function searchAdminStudentResultById() {
+            const inputVal = document.getElementById('adminSearchStudentIdInput').value.trim();
+            if (!inputVal) {
+                alert("कृपया छात्र की आईडी या रोल नंबर दर्ज करें!");
+                return;
+            }
+            renderAdminSingleStudentResultCard(inputVal);
+        }
+
+        function renderAdminSingleStudentResultCard(searchKey) {
+            const tradeSel = document.getElementById('adminResultTradeSelect');
+            const targetTrade = tradeSel ? tradeSel.value : getTradesList()[0];
+            if (!targetTrade) return;
+
+            const tStudents = getStudentList(targetTrade);
+            const targetStudent = tStudents.find(s => 
+                String(s.studentId).trim().toLowerCase() === searchKey.toLowerCase() ||
+                String(s.roll).trim() === searchKey
+            );
+
+            if (!targetStudent) {
+                alert(`ट्रेड [${targetTrade}] में आईडी या रोल '${searchKey}' वाला कोई छात्र नहीं मिला!`);
+                return;
+            }
+
+            const isEngg = isEnggTrade(targetTrade);
+            const typeStr = isEngg ? 'इंजीनियरिंग ट्रेड' : 'नॉन-इंजीनियरिंग ट्रेड';
+
+            document.getElementById('admResCardName').innerText = targetStudent.name;
+            document.getElementById('admResCardRoll').innerText = targetStudent.roll;
+            document.getElementById('admResCardId').innerText = targetStudent.studentId;
+            document.getElementById('admResCardTrade').innerText = `${targetTrade} (${typeStr})`;
+
+            const allRecMonths = Object.keys((appData.records && appData.records[targetTrade]) || {});
+            const allEvalMonths = Object.keys((appData.evaluations && appData.evaluations[targetTrade]) || {});
+            const allMonths = Array.from(new Set([...allRecMonths, ...allEvalMonths])).sort();
+
+            const monthWorkingDaysMap = {};
+            allMonths.forEach(mStr => {
+                const [y, m] = mStr.split('-').map(Number);
+                const totalD = new Date(y, m, 0).getDate();
+                const hols = (appData.holidays && appData.holidays[targetTrade] && appData.holidays[targetTrade][mStr]) || [];
+                let suns = 0, chols = 0;
+                for (let d = 1; d <= totalD; d++) {
+                    if (new Date(y, m - 1, d).getDay() === 0) suns++;
+                    else if (hols.includes(d)) chols++;
+                }
+                monthWorkingDaysMap[mStr] = totalD - (suns + chols);
+            });
+
+            const sRoll = String(targetStudent.roll).trim();
+            let pastW = parseInt(targetStudent.pastWorkingDays) || 0;
+            let pastP = parseInt(targetStudent.pastPresentDays) || 0;
+            let recordedPresent = 0;
+            let recordedWorking = 0;
+            let recordedAbsent = 0;
+            let testCount = 0;
+            let totalObt = 0;
+            let totalMM = 0;
+
+            const historyTbody = document.getElementById('admResCardMonthHistoryBody');
+            if (historyTbody) historyTbody.innerHTML = '';
+
+            allMonths.forEach(mStr => {
+                const mWork = monthWorkingDaysMap[mStr] || 0;
+                recordedWorking += mWork;
+                const mData = (appData.records && appData.records[targetTrade] && appData.records[targetTrade][mStr] && appData.records[targetTrade][mStr][sRoll]) || {};
+                const [y, m] = mStr.split('-').map(Number);
+                const totalD = new Date(y, m, 0).getDate();
+                const hols = (appData.holidays && appData.holidays[targetTrade] && appData.holidays[targetTrade][mStr]) || [];
+
+                let mPresent = 0, mAbsent = 0;
+                for (let d = 1; d <= totalD; d++) {
+                    const isSun = (new Date(y, m - 1, d).getDay() === 0);
+                    const isHol = hols.includes(d);
+                    if (!isSun && !isHol) {
+                        const eVal = mData[`${d}_e`] || 'P';
+                        if (eVal === 'P') mPresent++;
+                        else if (eVal === 'A') mAbsent++;
+                    }
+                }
+                recordedPresent += mPresent;
+                recordedAbsent += mAbsent;
+                const mAttPct = mWork > 0 ? ((mPresent / mWork) * 100).toFixed(1) : 0;
+
+                const ev = (appData.evaluations && appData.evaluations[targetTrade] && appData.evaluations[targetTrade][mStr] && appData.evaluations[targetTrade][mStr][sRoll]);
+                const mm = getMaxMarksConfig(targetTrade, mStr);
+                let mTestStr = '-', mTestPct = '-', mRec = '-', mDiary = '-', mDisc = '-';
+
+                if (ev && (ev.tt !== '' || ev.tp !== '' || ev.es !== '')) {
+                    testCount++;
+                    let mObt = (parseFloat(ev.tt) || 0) + (parseFloat(ev.tp) || 0) + (parseFloat(ev.es) || 0);
+                    let mMax = (parseFloat(mm.tt) || 20) + (parseFloat(mm.tp) || 20) + (parseFloat(mm.es) || 20);
+                    if (isEngg) {
+                        mObt += (parseFloat(ev.wcs) || 0) + (parseFloat(ev.ed) || 0);
+                        mMax += (parseFloat(mm.wcs) || 20) + (parseFloat(mm.ed) || 20);
+                    }
+                    totalObt += mObt;
+                    totalMM += mMax;
+                    mTestStr = `${mObt} / ${mMax}`;
+                    mTestPct = `${((mObt / mMax) * 100).toFixed(1)}%`;
+                    mRec = `${ev.recStatus || 'A'} (${ev.recRem || '-'})`;
+                    mDiary = `${ev.diaryStatus || 'नियमित'}`;
+                    mDisc = `${ev.disc || 'उत्कृष्ट'}`;
+                }
+
+                if (historyTbody) {
+                    historyTbody.innerHTML += `
+                        <tr>
+                            <td><strong>${mStr}</strong></td>
+                            <td>${mWork}</td>
+                            <td style="color:#16a34a; font-weight:700;">${mPresent}</td>
+                            <td style="color:#dc2626; font-weight:700;">${mAbsent}</td>
+                            <td>${mAttPct}%</td>
+                            <td><strong>${mTestStr}</strong></td>
+                            <td>${mTestPct}</td>
+                            <td>${mRec}</td>
+                            <td>${mDiary}</td>
+                            <td>${mDisc}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            const totalW = pastW + recordedWorking;
+            const totalP = pastP + recordedPresent;
+            const totalA = Math.max(0, totalW - totalP);
+            const attPct = totalW > 0 ? ((totalP / totalW) * 100).toFixed(1) : 0;
+            const testPct = totalMM > 0 ? ((totalObt / totalMM) * 100).toFixed(1) : 0;
+            const isEligible = parseFloat(attPct) >= 75;
+
+            document.getElementById('admResCardAttP').innerText = totalP;
+            document.getElementById('admResCardAttW').innerText = totalW;
+            document.getElementById('admResCardAttA').innerText = totalA;
+            document.getElementById('admResCardAttPct').innerText = `${attPct}%`;
+            document.getElementById('admResCardAttBar').style.width = `${Math.min(attPct, 100)}%`;
+
+            const elElig = document.getElementById('admResCardEligibility');
+            if (isEligible) {
+                elElig.innerHTML = `<span style="color:#16a34a; font-weight:800;"><i class="fa-solid fa-circle-check"></i> परीक्षा हेतु पूर्णतः पात्र (उपस्थिति ${attPct}% ≥ 75%)</span>`;
+            } else {
+                elElig.innerHTML = `<span style="color:#dc2626; font-weight:800;"><i class="fa-solid fa-triangle-exclamation"></i> परीक्षा हेतु अपात्र (उपस्थिति ${attPct}% &lt; 75% NCVT मानदंड)</span>`;
+            }
+
+            document.getElementById('admResCardTestCount').innerText = `${testCount} टेस्ट`;
+            document.getElementById('admResCardTestMarks').innerText = `${totalObt} / ${totalMM}`;
+            document.getElementById('admResCardTestPct').innerText = `${testPct}%`;
+
+            let grade = 'D';
+            if (testPct >= 80) grade = 'A+ (उत्कृष्ट)';
+            else if (testPct >= 70) grade = 'A (बहुत अच्छा)';
+            else if (testPct >= 60) grade = 'B (अच्छा)';
+            else if (testPct >= 50) grade = 'C (संतोषजनक)';
+            document.getElementById('admResCardGrade').innerText = grade;
         }
 
         // --- EXCEL EXPORT FUNCTIONS ---
